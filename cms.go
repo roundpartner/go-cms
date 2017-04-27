@@ -80,10 +80,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Page struct {
-    Page_id string
-    Title string
-    Content string
-    ContentType string
-    Created string
-    Modified string
+    Page_id string `json:"page_id"`
+    Title string `json:"title"`
+    Content string `json:"content"`
+    ContentType string `json:"content_type"`
+    Created string `json:"created"`
+    Modified string `json:"modified"`
 }
