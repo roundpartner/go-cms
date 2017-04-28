@@ -9,6 +9,7 @@ import (
     "fmt"
     "net/http"
     "encoding/json"
+    "github.com/gorilla/pat"
 )
 
 var config = struct {
@@ -33,50 +34,48 @@ func setupFlags() () {
 }
 
 func start(address string) {
-    http.HandleFunc("/", handler)
+    r := pat.New()
+    r.Get("/{id:[a-z_]+}", getPageHandler)
+    http.Handle("/", r)
     error := http.ListenAndServe(address, nil)
     if (nil != error) {
         log.Fatal(error)
     }
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-    if r.Method == "GET" {
+func getPageHandler(w http.ResponseWriter, r *http.Request) {
+    pageId := r.URL.Query().Get(":id")
 
-        pageId := r.URL.Query().Get("page")
-
-        db, err := sql.Open("mysql", config.Conn)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-        defer db.Close()
-
-        stmt, err := db.Prepare("select page_id, title, content, content_type, modified, created from page where page_id = ?")
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-        defer stmt.Close()
-
-        page := new(Page)
-
-        err = stmt.QueryRow(pageId).Scan(&page.Page_id, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
-        if err != nil {
-            w.WriteHeader(http.StatusNotFound)
-            return
-        }
-
-        js, err := json.Marshal(page)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-
-        w.Header().Set("Content-Type", "application/json")
-        w.Write(js)
-
+    db, err := sql.Open("mysql", config.Conn)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
     }
+    defer db.Close()
+
+    stmt, err := db.Prepare("select page_id, title, content, content_type, modified, created from page where page_id = ?")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    defer stmt.Close()
+
+    page := new(Page)
+
+    err = stmt.QueryRow(pageId).Scan(&page.Page_id, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
+    if err != nil {
+        w.WriteHeader(http.StatusNotFound)
+        return
+    }
+
+    js, err := json.Marshal(page)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(js)
 }
 
 type Page struct {
