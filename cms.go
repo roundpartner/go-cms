@@ -10,11 +10,15 @@ import (
     "net/http"
     "encoding/json"
     "github.com/gorilla/pat"
+    "io/ioutil"
+    "os"
+    "strings"
 )
 
 var config = struct {
     Port    int `flag:"port,port number to listen on"`
     Conn    string `flag:"conn,connection string"`
+    DocumentationPath string `flag:"path,path to documentation"`
 }{
 
 }
@@ -46,6 +50,32 @@ func start(address string) {
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
     pageId := r.URL.Query().Get(":id")
 
+    stat, err := os.Stat(config.DocumentationPath + "/crm/" + pageId + ".md")
+    if err == nil {
+
+        dat, err := ioutil.ReadFile(config.DocumentationPath + "/crm/" + pageId + ".md")
+        if err == nil {
+
+            p := strings.SplitAfter(string(dat), "\n")
+            page := new(Page)
+            page.PageId = pageId
+            page.Title = strings.Trim(p[0], "\n")
+            page.Content = strings.Trim(p[1], "\n")
+            page.ContentType = "markdown"
+            page.Modified = stat.ModTime().Format("2006-01-02 15:04:05")
+            page.Created = stat.ModTime().Format("2006-01-02 15:04:05")
+
+            js, err := json.Marshal(page)
+            if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+            w.Header().Set("Content-Type", "application/json")
+            w.Write(js)
+            return
+        }
+    }
+
     db, err := sql.Open("mysql", config.Conn)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -62,7 +92,7 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 
     page := new(Page)
 
-    err = stmt.QueryRow(pageId).Scan(&page.Page_id, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
+    err = stmt.QueryRow(pageId).Scan(&page.PageId, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
     if err != nil {
         w.WriteHeader(http.StatusNotFound)
         return
@@ -79,7 +109,7 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Page struct {
-    Page_id string `json:"page_id"`
+    PageId string `json:"page_id"`
     Title string `json:"title"`
     Content string `json:"content"`
     ContentType string `json:"content_type"`
