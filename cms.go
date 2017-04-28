@@ -13,6 +13,7 @@ import (
     "io/ioutil"
     "os"
     "strings"
+    "github.com/shurcooL/github_flavored_markdown"
 )
 
 var config = struct {
@@ -61,7 +62,8 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
             page.PageId = pageId
             page.Title = strings.Trim(p[0], "\n# ")
             page.Content = strings.Trim(p[1], "\n")
-            page.ContentType = "markdown"
+            page.Content = string(github_flavored_markdown.Markdown([]byte(page.Content)))
+            page.ContentType = "html"
             page.Modified = stat.ModTime().Format("2006-01-02 15:04:05")
             page.Created = stat.ModTime().Format("2006-01-02 15:04:05")
 
