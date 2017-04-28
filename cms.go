@@ -56,10 +56,10 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
         dat, err := ioutil.ReadFile(config.DocumentationPath + "/crm/" + pageId + ".md")
         if err == nil {
 
-            p := strings.SplitAfter(string(dat), "\n")
+            p := strings.SplitAfterN(string(dat), "\n", 2)
             page := new(Page)
             page.PageId = pageId
-            page.Title = strings.Trim(p[0], "\n")
+            page.Title = strings.Trim(p[0], "\n# ")
             page.Content = strings.Trim(p[1], "\n")
             page.ContentType = "markdown"
             page.Modified = stat.ModTime().Format("2006-01-02 15:04:05")
