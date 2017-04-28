@@ -50,10 +50,10 @@ func start(address string) {
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
     pageId := r.URL.Query().Get(":id")
 
-    stat, err := os.Stat(config.DocumentationPath + "/crm/" + pageId + ".md")
+    stat, err := os.Stat(config.DocumentationPath + "/page/" + pageId + ".md")
     if err == nil {
 
-        dat, err := ioutil.ReadFile(config.DocumentationPath + "/crm/" + pageId + ".md")
+        dat, err := ioutil.ReadFile(config.DocumentationPath + "/page/" + pageId + ".md")
         if err == nil {
 
             p := strings.SplitAfterN(string(dat), "\n", 2)
