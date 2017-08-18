@@ -1,2 +1,2 @@
-# go-cms
+# Go CMS
 CMS in Go
