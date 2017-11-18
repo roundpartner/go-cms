@@ -80,16 +80,20 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	page, err = getPageFromDatabase(pageId)
     if err != nil {
+        log.Fatalf("Error getting page: %s %s\n", pageId, err.Error())
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
     if page == nil {
+        log.Printf("Page not found: %s\n", pageId)
         w.WriteHeader(http.StatusNotFound)
         return
     }
+    log.Printf("Found page: %s\n", pageId)
 
 	js, err := json.Marshal(page)
 	if err != nil {
+        log.Fatalf("Error marshalling page: %s %s\n", pageId, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
