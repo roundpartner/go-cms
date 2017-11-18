@@ -20,6 +20,7 @@ var config = struct {
 	Port              int    `flag:"port,port number to listen on"`
 	Conn              string `flag:"conn,connection string"`
 	DocumentationPath string `flag:"path,path to documentation"`
+	Debug bool `flag:"debug,notify if pulling from database"`
 }{}
 
 func main() {
@@ -90,6 +91,10 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
     log.Printf("Found page: %s\n", pageId)
+
+    if config.Debug {
+        page.Content = "___Page was pulled from the database___\r\n" + page.Content
+    }
 
 	js, err := json.Marshal(page)
 	if err != nil {
