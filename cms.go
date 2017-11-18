@@ -76,27 +76,17 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	db, err := sql.Open("mysql", config.Conn)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+    page := new(Page)
 
-	stmt, err := db.Prepare("select page_id, title, content, content_type, modified, created from page where page_id = ?")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer stmt.Close()
-
-	page := new(Page)
-
-	err = stmt.QueryRow(pageId).Scan(&page.PageId, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+	page, err = getPageFromDatabase(pageId)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    if page == nil {
+        w.WriteHeader(http.StatusNotFound)
+        return
+    }
 
 	js, err := json.Marshal(page)
 	if err != nil {
@@ -106,6 +96,29 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func getPageFromDatabase(pageId string) (*Page, error) {
+    page := new(Page)
+
+    db, err := sql.Open("mysql", config.Conn)
+    if err != nil {
+        return nil, err
+    }
+    defer db.Close()
+
+    stmt, err := db.Prepare("select page_id, title, content, content_type, modified, created from page where page_id = ?")
+    if err != nil {
+        return nil, err
+    }
+    defer stmt.Close()
+
+    err = stmt.QueryRow(pageId).Scan(&page.PageId, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
+    if err != nil {
+        return nil, nil
+    }
+
+    return page, nil
 }
 
 type Page struct {
