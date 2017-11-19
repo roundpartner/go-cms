@@ -20,7 +20,7 @@ var config = struct {
 	Port              int    `flag:"port,port number to listen on"`
 	Conn              string `flag:"conn,connection string"`
 	DocumentationPath string `flag:"path,path to documentation"`
-	Debug bool `flag:"debug,notify if pulling from database"`
+	Debug             bool   `flag:"debug,notify if pulling from database"`
 }{}
 
 func main() {
@@ -68,6 +68,7 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 
 			js, err := json.Marshal(page)
 			if err != nil {
+				log.Fatalf("Error marshalling page: %s %s\n", pageId, err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -77,28 +78,28 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-    page := new(Page)
+	page := new(Page)
 
 	page, err = getPageFromDatabase(pageId)
-    if err != nil {
-        log.Fatalf("Error getting page: %s %s\n", pageId, err.Error())
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    if page == nil {
-        log.Printf("Page not found: %s\n", pageId)
-        w.WriteHeader(http.StatusNotFound)
-        return
-    }
-    log.Printf("Found page: %s\n", pageId)
+	if err != nil {
+		log.Fatalf("Error getting page: %s %s\n", pageId, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if page == nil {
+		log.Printf("Page not found: %s\n", pageId)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	log.Printf("Found page: %s\n", pageId)
 
-    if config.Debug {
-        page.Content = "___Page was pulled from the database___\r\n" + page.Content
-    }
+	if config.Debug {
+		page.Content = "___Page was pulled from the database___\r\n" + page.Content
+	}
 
 	js, err := json.Marshal(page)
 	if err != nil {
-        log.Fatalf("Error marshalling page: %s %s\n", pageId, err.Error())
+		log.Fatalf("Error marshalling page: %s %s\n", pageId, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -108,26 +109,26 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPageFromDatabase(pageId string) (*Page, error) {
-    page := new(Page)
+	page := new(Page)
 
-    db, err := sql.Open("mysql", config.Conn)
-    if err != nil {
-        return nil, err
-    }
-    defer db.Close()
+	db, err := sql.Open("mysql", config.Conn)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
 
-    stmt, err := db.Prepare("select page_id, title, content, content_type, modified, created from page where page_id = ?")
-    if err != nil {
-        return nil, err
-    }
-    defer stmt.Close()
+	stmt, err := db.Prepare("select page_id, title, content, content_type, modified, created from page where page_id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
 
-    err = stmt.QueryRow(pageId).Scan(&page.PageId, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
-    if err != nil {
-        return nil, nil
-    }
+	err = stmt.QueryRow(pageId).Scan(&page.PageId, &page.Title, &page.Content, &page.ContentType, &page.Modified, &page.Created)
+	if err != nil {
+		return nil, nil
+	}
 
-    return page, nil
+	return page, nil
 }
 
 type Page struct {
