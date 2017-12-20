@@ -24,7 +24,7 @@ var config = struct {
 }{}
 
 func main() {
-
+	log.SetOutput(os.Stdout)
 	setupFlags()
 
 	address := fmt.Sprintf(":%d", config.Port)
@@ -41,7 +41,10 @@ func start(address string) {
 	r := pat.New()
 	r.Get("/{id:[a-z_]+}", getPageHandler)
 	http.Handle("/", r)
-	error := http.ListenAndServe(address, nil)
+	server := &http.Server{Addr: address}
+	ShutdownGracefully(server)
+	log.Printf("Server starting on %s\n", address)
+	error := server.ListenAndServe()
 	if nil != error {
 		log.Fatal(error)
 	}
@@ -82,7 +85,7 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	page, err = getPageFromDatabase(pageId)
 	if err != nil {
-		log.Fatalf("Error getting page: %s %s\n", pageId, err.Error())
+		log.Printf("Error getting page: %s %s\n", pageId, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -99,7 +102,7 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	js, err := json.Marshal(page)
 	if err != nil {
-		log.Fatalf("Error marshalling page: %s %s\n", pageId, err.Error())
+		log.Printf("Error marshalling page: %s %s\n", pageId, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
