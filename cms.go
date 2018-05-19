@@ -85,8 +85,13 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 		}
 	}
 
-	page := new(Page)
+	if "page" != slug {
+		log.Printf("Page not found: %s\n", pageId)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
+	page := new(Page)
 	page, err = getPageFromDatabase(pageId)
 	if err != nil {
 		log.Printf("Error getting page: %s %s\n", pageId, err.Error())
