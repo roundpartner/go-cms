@@ -51,9 +51,13 @@ func start(address string) {
 }
 
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
+	getPage(w, r, "page")
+}
+
+func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 	pageId := r.URL.Query().Get(":id")
 
-	stat, err := os.Stat(config.DocumentationPath + "/page/" + pageId + ".md")
+	stat, err := os.Stat(config.DocumentationPath + "/" + slug + "/" + pageId + ".md")
 	if err == nil {
 
 		dat, err := ioutil.ReadFile(config.DocumentationPath + "/page/" + pageId + ".md")
