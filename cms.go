@@ -39,7 +39,7 @@ func setupFlags() {
 
 func start(address string) {
 	r := pat.New()
-	r.Get("/{slug:[a-z_]+}/{id:[a-z_]+}", getPageWithSlugHandler)
+	r.Get("/{slug:[a-z_]+}/{id:[a-z_-]+}", getPageWithSlugHandler)
 	r.Get("/{id:[a-z_]+}", getPageHandler)
 	http.Handle("/", r)
 	server := &http.Server{Addr: address}
