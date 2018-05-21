@@ -40,6 +40,7 @@ func setupFlags() {
 func start(address string) {
 	r := pat.New()
 	r.Get("/{id:[a-z_]+}", getPageHandler)
+	r.Get("/{slug:[a-z_]+}/{id:[a-z_]+}", getPageWithSlugHandler)
 	http.Handle("/", r)
 	server := &http.Server{Addr: address}
 	ShutdownGracefully(server)
@@ -52,6 +53,11 @@ func start(address string) {
 
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
 	getPage(w, r, "page")
+}
+
+func getPageWithSlugHandler(w http.ResponseWriter, r *http.Request) {
+	slug := r.URL.Query().Get(":slug")
+	getPage(w, r, slug)
 }
 
 func getPage(w http.ResponseWriter, r *http.Request, slug string) {
