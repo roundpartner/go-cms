@@ -66,7 +66,7 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 	stat, err := os.Stat(config.DocumentationPath + "/" + slug + "/" + pageId + ".md")
 	if err == nil {
 
-		dat, err := ioutil.ReadFile(config.DocumentationPath + "/page/" + pageId + ".md")
+		dat, err := ioutil.ReadFile(config.DocumentationPath + "/" + slug + "/" + pageId + ".md")
 		if err == nil {
 
 			p := strings.SplitAfterN(string(dat), "\n", 2)
