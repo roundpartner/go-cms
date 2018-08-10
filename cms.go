@@ -89,7 +89,9 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 			w.Write(js)
 			return
 		}
+		log.Printf("Unable to read: %s", err.Error())
 	}
+	log.Printf("Not found: %s", config.DocumentationPath + "/" + slug + "/" + pageId + ".md")
 
 	if "page" != slug {
 		log.Printf("Page not found: %s\n", pageId)
