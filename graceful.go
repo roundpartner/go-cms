@@ -14,10 +14,13 @@ var activeConnections = 0
 
 func ShutdownGracefully(server *http.Server) {
 	server.ConnState = func(conn net.Conn, state http.ConnState) {
-		if "active" == state.String() {
+		if "new" == state.String() {
 			activeConnections++
 		}
-		if "idle" == state.String() {
+		if "closed" == state.String() {
+			activeConnections--
+		}
+		if "hijacked" == state.String() {
 			activeConnections--
 		}
 	}
