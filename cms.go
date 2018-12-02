@@ -39,6 +39,7 @@ func setupFlags() {
 
 func start(address string) {
 	r := pat.New()
+	r.Get("/check", check)
 	r.Get("/{slug:[a-z_]+}/{id:[a-z_-]+}", getPageWithSlugHandler)
 	r.Get("/{id:[a-z_]+}", getPageHandler)
 	http.Handle("/", r)
@@ -49,6 +50,10 @@ func start(address string) {
 	if nil != error {
 		log.Fatal(error)
 	}
+}
+
+func check(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
