@@ -21,7 +21,9 @@ var config = struct {
 	Conn              string `flag:"conn,connection string"`
 	DocumentationPath string `flag:"path,path to documentation"`
 	Debug             bool   `flag:"debug,notify if pulling from database"`
-}{}
+}{
+	Port: 7335,
+}
 
 func main() {
 	log.SetOutput(os.Stdout)
@@ -96,7 +98,7 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 		}
 		log.Printf("Unable to read: %s", err.Error())
 	}
-	log.Printf("Not found: %s", config.DocumentationPath + "/" + slug + "/" + pageId + ".md")
+	log.Printf("Not found: %s", config.DocumentationPath+"/"+slug+"/"+pageId+".md")
 
 	if "page" != slug {
 		log.Printf("Page not found: %s\n", pageId)
