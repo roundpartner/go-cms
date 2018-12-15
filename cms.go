@@ -59,6 +59,7 @@ func check(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Use of deprectated endpoint detected: %s", r.URL.Query().Get(":id"))
 	getPage(w, r, "page")
 }
 
