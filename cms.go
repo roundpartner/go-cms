@@ -47,7 +47,7 @@ func start(address string) {
 	http.Handle("/", r)
 	server := &http.Server{Addr: address}
 	ShutdownGracefully(server)
-	log.Printf("Server starting on %s\n", address)
+	log.Printf("[INFO] Server starting on %s", address)
 	error := server.ListenAndServe()
 	if nil != error {
 		log.Fatal(error)
@@ -59,7 +59,7 @@ func check(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Use of deprectated endpoint detected: %s", r.URL.Query().Get(":id"))
+	log.Printf("[INFO] Use of deprectated endpoint detected: %s", r.URL.Query().Get(":id"))
 	getPage(w, r, "page")
 }
 
@@ -89,20 +89,21 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 
 			js, err := json.Marshal(page)
 			if err != nil {
-				log.Fatalf("Error marshalling page: %s %s\n", pageId, err.Error())
+				log.Fatalf("[ERROR] Error marshalling page: %s %s\n", pageId, err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			log.Printf("[INFO] Returning page: %s/%s.md", slug, pageId)
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(js)
 			return
 		}
-		log.Printf("Unable to read: %s", err.Error())
+		log.Printf("[INFO] Unable to read: %s", err.Error())
 	}
-	log.Printf("Not found: %s", config.DocumentationPath+"/"+slug+"/"+pageId+".md")
+	log.Printf("[INFO] Not found: %s", config.DocumentationPath+"/"+slug+"/"+pageId+".md")
 
 	if "page" != slug {
-		log.Printf("Page not found: %s\n", pageId)
+		log.Printf("[INFO] Page not found: %s\n", pageId)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -110,16 +111,16 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 	page := new(Page)
 	page, err = getPageFromDatabase(pageId)
 	if err != nil {
-		log.Printf("Error getting page: %s %s\n", pageId, err.Error())
+		log.Printf("[ERROR] Error getting page: %s %s\n", pageId, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if page == nil {
-		log.Printf("Page not found: %s\n", pageId)
+		log.Printf("[INFO] Page not found: %s\n", pageId)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	log.Printf("Found page in database: %s\n", pageId)
+	log.Printf("[INFO] Found page in database: %s\n", pageId)
 
 	if config.Debug {
 		page.Content = "___Page was pulled from the database___\r\n" + page.Content
@@ -127,7 +128,7 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 
 	js, err := json.Marshal(page)
 	if err != nil {
-		log.Printf("Error marshalling page: %s %s\n", pageId, err.Error())
+		log.Printf("[ERROR] Error marshalling page: %s %s\n", pageId, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
