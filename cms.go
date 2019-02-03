@@ -119,7 +119,7 @@ func getPage(w http.ResponseWriter, r *http.Request, slug string) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	log.Printf("Found page: %s\n", pageId)
+	log.Printf("Found page in database: %s\n", pageId)
 
 	if config.Debug {
 		page.Content = "___Page was pulled from the database___\r\n" + page.Content
