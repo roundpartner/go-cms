@@ -16,6 +16,8 @@ import (
 	"strings"
 )
 
+var ServiceName = "go-cms"
+
 var config = struct {
 	Port              int    `flag:"port,port number to listen on"`
 	Conn              string `flag:"conn,connection string"`
@@ -47,10 +49,10 @@ func start(address string) {
 	http.Handle("/", r)
 	server := &http.Server{Addr: address}
 	ShutdownGracefully(server)
-	log.Printf("[INFO] Server starting on %s", address)
-	error := server.ListenAndServe()
-	if nil != error {
-		log.Fatal(error)
+	log.Printf("[INFO] [%s] Server starting on address %s", ServiceName, address)
+	err := server.ListenAndServe()
+	if nil != err {
+		log.Printf("[INFO] [%s] %s", ServiceName, err.Error())
 	}
 }
 
